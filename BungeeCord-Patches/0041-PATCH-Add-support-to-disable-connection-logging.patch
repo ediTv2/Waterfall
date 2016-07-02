@@ -1,0 +1,75 @@
+From 465e9f56a78a15aa17732e7e1d8d1c268af55840 Mon Sep 17 00:00:00 2001
+From: ediTv2 <edit.vidz@gmail.com>
+Date: Fri, 1 Jul 2016 19:28:12 -0700
+Subject: [PATCH] [PATCH] Add support to disable connection logging
+
+
+diff --git a/api/src/main/java/net/md_5/bungee/api/ProxyConfig.java b/api/src/main/java/net/md_5/bungee/api/ProxyConfig.java
+index a443614..979df79 100644
+--- a/api/src/main/java/net/md_5/bungee/api/ProxyConfig.java
++++ b/api/src/main/java/net/md_5/bungee/api/ProxyConfig.java
+@@ -169,6 +169,11 @@ public interface ProxyConfig
+     boolean isLogServerListPing();
+ 
+     /**
++     * Whether we log connections
++     */
++    boolean isLogServerConnect();
++
++    /**
+      * The supported versions
+      */
+     String getGameVersion();
+diff --git a/proxy/src/main/java/io/github/waterfallmc/waterfall/conf/WaterfallConfiguration.java b/proxy/src/main/java/io/github/waterfallmc/waterfall/conf/WaterfallConfiguration.java
+index 32f7b99..6da71fb 100644
+--- a/proxy/src/main/java/io/github/waterfallmc/waterfall/conf/WaterfallConfiguration.java
++++ b/proxy/src/main/java/io/github/waterfallmc/waterfall/conf/WaterfallConfiguration.java
+@@ -28,6 +28,13 @@ public class WaterfallConfiguration extends Configuration {
+     private boolean logServerListPing = false;
+ 
+     /**
++     * Hide initial connections (clean view)
++     * <p>
++     * Default is true (per request)
++     */
++    private boolean logServerConnect = true;
++
++    /**
+      * The supported versions displayed to the client
+      * <p>Default is a comma seperated list of supported versions. For example 1.8.x, 1.9.x, 1.10.x</p>
+      */
+@@ -54,6 +61,7 @@ public class WaterfallConfiguration extends Configuration {
+         config.load(false); // Load, but no permissions
+         metrics = config.getBoolean("metrics", metrics);
+         logServerListPing = config.getBoolean( "log_server_list_ping", logServerListPing );
++        logServerConnect = config.getBoolean( "log_server_connect", logServerConnect);
+         // Throttling options
+         tabThrottle = config.getInt("throttling.tab_complete", tabThrottle);
+         gameVersion = config.getString("game_version", "").isEmpty() ? Joiner.on(", ").join(ProtocolConstants.SUPPORTED_VERSIONS) : config.getString("game_version", "");
+@@ -73,4 +81,7 @@ public class WaterfallConfiguration extends Configuration {
+     public boolean isLogServerListPing() {
+         return logServerListPing;
+     }
++
++    @Override
++    public boolean isLogServerConnect() { return logServerConnect; }
+ }
+diff --git a/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java b/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java
+index 132b73d..dce2738 100644
+--- a/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java
++++ b/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java
+@@ -292,8 +292,10 @@ public class InitialHandler extends PacketHandler implements PendingConnection
+                 ch.setProtocol( Protocol.STATUS );
+                 break;
+             case 2:
++                if (!BungeeCord.getInstance().getConfig().isLogServerConnect()) {
++                    bungee.getLogger().log( Level.INFO, "{0} has connected", this );
++                }
+                 // Login
+-                bungee.getLogger().log( Level.INFO, "{0} has connected", this );
+                 thisState = State.USERNAME;
+                 ch.setProtocol( Protocol.LOGIN );
+ 
+-- 
+2.8.1.windows.1
+
