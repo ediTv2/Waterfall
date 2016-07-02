@@ -1,7 +1,7 @@
-From 465e9f56a78a15aa17732e7e1d8d1c268af55840 Mon Sep 17 00:00:00 2001
+From bfdeb18ed6646ecf8d8fe0335609cb4eda2f77d0 Mon Sep 17 00:00:00 2001
 From: ediTv2 <edit.vidz@gmail.com>
 Date: Fri, 1 Jul 2016 19:28:12 -0700
-Subject: [PATCH] [PATCH] Add support to disable connection logging
+Subject: [PATCH] Add support to disable connection logging
 
 
 diff --git a/api/src/main/java/net/md_5/bungee/api/ProxyConfig.java b/api/src/main/java/net/md_5/bungee/api/ProxyConfig.java
@@ -55,14 +55,14 @@ index 32f7b99..6da71fb 100644
 +    public boolean isLogServerConnect() { return logServerConnect; }
  }
 diff --git a/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java b/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java
-index 132b73d..dce2738 100644
+index 132b73d..c1ff7e5 100644
 --- a/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java
 +++ b/proxy/src/main/java/net/md_5/bungee/connection/InitialHandler.java
 @@ -292,8 +292,10 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                  ch.setProtocol( Protocol.STATUS );
                  break;
              case 2:
-+                if (!BungeeCord.getInstance().getConfig().isLogServerConnect()) {
++                if (BungeeCord.getInstance().getConfig().isLogServerConnect()) {
 +                    bungee.getLogger().log( Level.INFO, "{0} has connected", this );
 +                }
                  // Login
